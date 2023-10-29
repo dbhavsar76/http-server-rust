@@ -30,8 +30,16 @@ fn handle_request(mut stream: TcpStream) {
 
     let path = get_request_path(request);
     let response = match path.as_str() {
-        "/" => "HTTP/1.1 200 OK\r\n\r\n",
-        _ => "HTTP/1.1 404 Not Found\r\n\r\n",
+        "/" => "HTTP/1.1 200 OK\r\n\r\n".to_string(),
+        p if p.starts_with("/echo/") => {
+            let body = path.strip_prefix("/echo/").unwrap();
+            format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+                body.len(),
+                body,
+            )
+        },
+        _ => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
     };
 
     stream.write_all(response.as_bytes());
