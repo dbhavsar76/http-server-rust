@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
-use std::net::{Shutdown, TcpListener, TcpStream};
+use std::net::{TcpListener, TcpStream};
+use std::time::Duration;
 use itertools::Itertools;
 
 fn main() {
@@ -21,9 +22,11 @@ fn main() {
 }
 
 fn handle_request(mut stream: TcpStream) {
+    stream.set_read_timeout(Option::from(Duration::from_secs(1)));
+    stream.set_write_timeout(Option::from(Duration::from_secs(1)));
+
     let mut request = String::new();
-    let _ = stream.read_to_string(&mut request);
-    // let _ = stream.shutdown(Shutdown::Read);
+    stream.read_to_string(&mut request);
 
     let path = get_request_path(request);
     let response = match path.as_str() {
@@ -31,8 +34,7 @@ fn handle_request(mut stream: TcpStream) {
         _ => "HTTP/1.1 404 Not Found\r\n\r\n",
     };
 
-    let _ = stream.write_all(response.as_bytes());
-    let _ = stream.shutdown(Shutdown::Both);
+    stream.write_all(response.as_bytes());
 }
 
 fn get_request_path(request: String) -> String {
