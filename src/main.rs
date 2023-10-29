@@ -22,8 +22,8 @@ fn main() {
 
 fn handle_request(mut stream: TcpStream) {
     let mut request = String::new();
-    stream.read_to_string(&mut request);
-    stream.shutdown(Shutdown::Read);
+    let _ = stream.read_to_string(&mut request);
+    // let _ = stream.shutdown(Shutdown::Read);
 
     let path = get_request_path(request);
     let response = match path.as_str() {
@@ -31,9 +31,8 @@ fn handle_request(mut stream: TcpStream) {
         _ => "HTTP/1.1 404 Not Found\r\n\r\n",
     };
 
-    stream.write_all(response.as_bytes());
-    stream.flush();
-    stream.shutdown(Shutdown::Write);
+    let _ = stream.write_all(response.as_bytes());
+    let _ = stream.shutdown(Shutdown::Both);
 }
 
 fn get_request_path(request: String) -> String {
